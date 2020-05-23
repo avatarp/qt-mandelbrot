@@ -6,21 +6,28 @@
 #include <QThread>
 #include <QtDebug>
 
+
 class fractalRenderer :  QThread
 {
      Q_OBJECT
 private:
-    QImage processedImage;
+    std::vector<std::vector<unsigned>> imageData;
     unsigned width;
     unsigned height;
-    QColor value(int x, int y);
+    unsigned threadsAlive;
+    std::mutex lock;
+    std::chrono::milliseconds renderStartTime;
+    bool drawingFinished;
+    bool isStopped;
+    unsigned value(int x, int y);
+    void render(unsigned widthFrom, unsigned widthTo);
 public:
     fractalRenderer();
-    void setDimentions(unsigned x,unsigned y)
-    {width=x;height=y;}
+    void stop();
+    void setDimentions(unsigned x,unsigned y);
     void runRenderer(unsigned threads);
-    void run() override;
-    QImage getImage(){return processedImage;}
+    bool isFinished(){return drawingFinished;}
+    std::vector<std::vector<unsigned>> getImageData(){return imageData;}
 };
 
 #endif // FRACTALRENDERER_H
