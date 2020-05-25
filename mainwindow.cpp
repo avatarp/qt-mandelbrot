@@ -4,11 +4,11 @@
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    mandelbrot.setDimentions(this->width(),this->height());
+    mandelbrot.setDimensions(this->width(),this->height());
     mandelbrot.runRenderer(std::thread::hardware_concurrency());
-    rMult=1;
-    gMult=1;
-    bMult=10;
+    rMult=7;
+    gMult=7;
+    bMult=7;
     updateTimer = new QTimer(this);
     connect(updateTimer, SIGNAL(timeout()), this, SLOT(update()));
     updateTimer->start(100);
@@ -45,8 +45,7 @@ void MainWindow::paintEvent(QPaintEvent * /*event*/)
 void MainWindow::resizeEvent(QResizeEvent * /*event*/)
 {
     mandelbrot.stop();
-    mandelbrot.setDimentions(this->width(),this->height());
+    mandelbrot.setDimensions(this->width(),this->height());
     mandelbrot.runRenderer(std::thread::hardware_concurrency());
     if(updateTimer->isActive()==false){updateTimer->start(100);}
-
 }

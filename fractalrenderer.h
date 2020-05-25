@@ -1,15 +1,13 @@
 #ifndef FRACTALRENDERER_H
 #define FRACTALRENDERER_H
+
 #include <complex>
-#include <QImage>
-#include <QPainter>
-#include <QThread>
+#include <thread>
+#include <mutex>
 #include <QtDebug>
 
-
-class fractalRenderer :  QThread
+class fractalRenderer
 {
-     Q_OBJECT
 private:
     std::vector<std::vector<unsigned>> imageData;
     unsigned width;
@@ -24,7 +22,7 @@ private:
 public:
     fractalRenderer();
     void stop();
-    void setDimentions(unsigned x,unsigned y);
+    void setDimensions(unsigned x,unsigned y);
     void runRenderer(unsigned threads);
     bool isFinished(){return drawingFinished;}
     std::vector<std::vector<unsigned>> getImageData(){return imageData;}
