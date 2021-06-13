@@ -7,26 +7,15 @@
 #include <QtDebug>
 #include "fractalrenderer.h"
 
-class mandelbrotRenderer: fractalRenderer
+class mandelbrotRenderer: public fractalRenderer
 {
 private:
-    std::vector<std::vector<unsigned>> imageData;
-    unsigned width;
-    unsigned height;
-    unsigned threadsAlive;
-    std::mutex lock;
     std::chrono::milliseconds renderStartTime;
-    bool drawingFinished;
-    bool isStopped;
     unsigned value(unsigned &x, unsigned &y);
     void render(unsigned widthFrom, unsigned widthTo);
 public:
     mandelbrotRenderer();
-    void stop();
-    void setDimensions(unsigned x,unsigned y);
-    void runRenderer(unsigned threads);
-    bool isFinished(){return drawingFinished;}
-    std::vector<std::vector<unsigned>> getImageData(){return imageData;}
+    void renderStart(unsigned threads);
 };
 
 #endif // MANDELBROTRENDERER_H

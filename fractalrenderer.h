@@ -6,28 +6,29 @@
 #include <mutex>
 #include <QtDebug>
 
+enum RendererState
+{
+    running,
+    drawingFinished,
+    stopped
+};
+
 class fractalRenderer
 {
-private:
-    std::vector<std::vector<unsigned>> imageData;
+protected:
     unsigned width;
     unsigned height;
-    unsigned threadsAlive;
+    RendererState state;
+    std::vector<std::vector<unsigned>> imageData;
+    unsigned workerThreadsAlive;
     std::mutex lock;
-    std::chrono::milliseconds renderStartTime;
-    bool drawingFinished;
-    bool isStopped;
-    unsigned iterationsLimit;
-    unsigned value(unsigned &x, unsigned &y);
-    void render(unsigned widthFrom, unsigned widthTo);
-
 public:
     fractalRenderer();
     virtual void stop();
     virtual void setDimensions(unsigned x,unsigned y);
-    virtual void runRenderer(unsigned threads);
-    virtual bool isFinished(){return drawingFinished;}
-    virtual std::vector<std::vector<unsigned>> getImageData(){return imageData;}
+    virtual void renderStart(unsigned threads)=0;
+    virtual bool isFinished();
+    virtual std::vector<std::vector<unsigned>> getImageData();
 };
 
 #endif // FRACTALRENDERER_H

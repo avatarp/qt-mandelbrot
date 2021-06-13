@@ -6,7 +6,7 @@
 #include <QPainter>
 #include <QtDebug>
 #include <QTimer>
-#include "fractalrenderer.h"
+#include "mandelbrotrenderer.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -23,9 +23,10 @@ public:
 private:
     Ui::MainWindow *ui;
     unsigned rMult, gMult, bMult;
-    fractalRenderer mandelbrot;
+    mandelbrotRenderer mandelbrot;
     QTimer *updateTimer;
     std::vector<std::vector<unsigned>> imageData;
     const unsigned colorModulo=256;
+    void restartRenderer();
 };
 #endif // MAINWINDOW_H

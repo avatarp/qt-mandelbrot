@@ -4,32 +4,22 @@ mandelbrotRenderer::mandelbrotRenderer()
 {
     width=800;
     height=600;
-    threadsAlive=0;
+    workerThreadsAlive=0;
+    imageData = std::vector<std::vector<unsigned> >(width, std::vector<unsigned> (height, 0));
+    state=RendererState::running;
     //iterationsLimit=42;
-    drawingFinished=false;
-    isStopped=false;
-    std::vector<std::vector<unsigned> > temp(width, std::vector<unsigned> (height, 0));
-    imageData = temp;
 }
 
-void mandelbrotRenderer::setDimensions(unsigned x, unsigned y)
-{
-    width=x;
-    height=y;
-    std::vector<std::vector<unsigned> > temp(width, std::vector<unsigned> (height, 0));
-    imageData = temp;
-}
 
-void mandelbrotRenderer::runRenderer(unsigned threadsCount)
+void mandelbrotRenderer::renderStart(unsigned threadsCount)
 {
     if(threadsCount==0)
         threadsCount=1;
 
-    if(isStopped)
+    if(state!=RendererState::running)
     {
         qDebug()<<"Reseting...";
-        drawingFinished=false;
-        isStopped=false;
+        state=RendererState::running;
     }
 
     qDebug()<<"Starting"<<threadsCount<<"threads";
@@ -45,7 +35,7 @@ void mandelbrotRenderer::runRenderer(unsigned threadsCount)
         workers[i] = std::thread(&mandelbrotRenderer::render, this,
                                  i*widthPart,
                                  (i+1)*widthPart);
-        threadsAlive++;
+        workerThreadsAlive++;
         workers[i].detach();
     }
 }
@@ -57,20 +47,20 @@ void mandelbrotRenderer::render(unsigned widthFrom, unsigned widthTo)
         for(unsigned y=0;y<height;y++)
         {
             imageData[x][y]=value(x,y);
-            if(isStopped){break;}
+            if(state==RendererState::stopped){break;}
         }
-        if(isStopped){break;}
+        if(state==RendererState::stopped){break;}
     }
 
     lock.lock();
-    threadsAlive--;
+    workerThreadsAlive--;
 
-    if(threadsAlive==0)
+    if(workerThreadsAlive==0)
     {
         std::chrono::milliseconds renderEndTime=std::chrono::duration_cast< std::chrono::milliseconds >
                 (std::chrono::system_clock::now().time_since_epoch());
         renderEndTime-=renderStartTime;
-        drawingFinished=true;
+        state=RendererState::drawingFinished;
         qDebug()<<"Finished in"<<renderEndTime.count()<<"ms";
     }
     lock.unlock();
@@ -89,13 +79,4 @@ unsigned mandelbrotRenderer::value(unsigned &x, unsigned &y)
         iterations++;
     }
     return iterations;
-}
-
-void mandelbrotRenderer::stop()
-{
-    isStopped=true;
-    while(threadsAlive>0)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
 }

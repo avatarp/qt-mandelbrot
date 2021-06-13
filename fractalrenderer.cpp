@@ -4,97 +4,37 @@ fractalRenderer::fractalRenderer()
 {
     width=800;
     height=600;
-    threadsAlive=0;
-    iterationsLimit=42;
-    drawingFinished=false;
-    isStopped=false;
-    std::vector<std::vector<unsigned> > temp(width, std::vector<unsigned> (height, 0));
-    imageData = temp;
+    workerThreadsAlive=0;
+    imageData = std::vector<std::vector<unsigned> >
+            (width, std::vector<unsigned> (height, 0));
+    state=RendererState::running;
 }
 
 void fractalRenderer::setDimensions(unsigned x, unsigned y)
 {
     width=x;
     height=y;
-    std::vector<std::vector<unsigned> > temp(width, std::vector<unsigned> (height, 0));
-    imageData = temp;
+    imageData = std::vector<std::vector<unsigned>>
+            (width, std::vector<unsigned> (height, 0));
 }
 
-void fractalRenderer::runRenderer(unsigned threadsCount)
+bool fractalRenderer::isFinished()
 {
-    if(threadsCount==0)
-        threadsCount=1;
-
-    if(isStopped)
-    {
-        qDebug()<<"Reseting...";
-        drawingFinished=false;
-        isStopped=false;
-    }
-
-    qDebug()<<"Starting"<<threadsCount<<"threads";
-
-    renderStartTime=std::chrono::duration_cast< std::chrono::milliseconds >
-            (std::chrono::system_clock::now().time_since_epoch());
-
-    unsigned widthPart=width/threadsCount;
-    std::vector<std::thread> workers(threadsCount);
-
-    for(unsigned i=0;i<threadsCount;i++)
-    {
-        workers[i] = std::thread(&fractalRenderer::render, this,
-                                 i*widthPart,
-                                 (i+1)*widthPart);
-        threadsAlive++;
-        workers[i].detach();
-    }
+    if(state==RendererState::drawingFinished)
+        return true;
+    else
+        return false;
 }
 
-void fractalRenderer::render(unsigned widthFrom, unsigned widthTo)
+std::vector<std::vector<unsigned> > fractalRenderer::getImageData()
 {
-    for(unsigned x=widthFrom;x<widthTo;x++)
-    {
-        for(unsigned y=0;y<height;y++)
-        {
-            imageData[x][y]=value(x,y);
-            if(isStopped){break;}
-        }
-        if(isStopped){break;}
-    }
-
-    lock.lock();
-    threadsAlive--;
-
-    if(threadsAlive==0)
-    {
-        std::chrono::milliseconds renderEndTime=std::chrono::duration_cast< std::chrono::milliseconds >
-                (std::chrono::system_clock::now().time_since_epoch());
-        renderEndTime-=renderStartTime;
-        drawingFinished=true;
-        qDebug()<<"Finished in"<<renderEndTime.count()<<"ms";
-    }
-    lock.unlock();
-}
-
-
-unsigned fractalRenderer::value(unsigned &x, unsigned &y)
-{
-    std::complex<float> point((float)x/width-1.5, (float)y/height-0.5);
-    std::complex<float> z(0, 0);
-    unsigned iterations = 0;
-
-    while (abs(z) < 2 && iterations < iterationsLimit)
-    {
-        z = z * z + point;
-        iterations++;
-    }
-    return iterations;
+    return imageData;
 }
 
 void fractalRenderer::stop()
 {
-    isStopped=true;
-    while(threadsAlive>0)
+    state=RendererState::stopped;
+    while(workerThreadsAlive>0)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
