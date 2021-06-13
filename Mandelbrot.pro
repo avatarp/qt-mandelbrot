@@ -1,4 +1,5 @@
 QT       += core gui
+QT += testlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,11 +19,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     fractalrenderer.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    mandelbrotrenderer.cpp
 
 HEADERS += \
     fractalrenderer.h \
-    mainwindow.h
+    mainwindow.h \
+    mandelbrotrenderer.h
 
 FORMS += \
     mainwindow.ui

@@ -17,15 +17,17 @@ private:
     std::chrono::milliseconds renderStartTime;
     bool drawingFinished;
     bool isStopped;
-    unsigned value(int x, int y);
+    unsigned iterationsLimit;
+    unsigned value(unsigned &x, unsigned &y);
     void render(unsigned widthFrom, unsigned widthTo);
+
 public:
     fractalRenderer();
-    void stop();
-    void setDimensions(unsigned x,unsigned y);
-    void runRenderer(unsigned threads);
-    bool isFinished(){return drawingFinished;}
-    std::vector<std::vector<unsigned>> getImageData(){return imageData;}
+    virtual void stop();
+    virtual void setDimensions(unsigned x,unsigned y);
+    virtual void runRenderer(unsigned threads);
+    virtual bool isFinished(){return drawingFinished;}
+    virtual std::vector<std::vector<unsigned>> getImageData(){return imageData;}
 };
 
 #endif // FRACTALRENDERER_H
