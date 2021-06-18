@@ -5,9 +5,14 @@ mandelbrotRenderer::mandelbrotRenderer()
     width=800;
     height=600;
     workerThreadsAlive=0;
-    imageData = std::vector<std::vector<unsigned> >(width, std::vector<unsigned> (height, 0));
+    imageData = std::vector<std::vector<unsigned> >
+            (width, std::vector<unsigned> (height, 0));
     state=RendererState::running;
-    //iterationsLimit=42;
+    iterationsLimit=42;
+    zoomX=0.5;
+    zoomY=0.5;
+    positionX=-1.5;
+    positionY=-1;
 }
 
 
@@ -47,9 +52,11 @@ void mandelbrotRenderer::render(unsigned widthFrom, unsigned widthTo)
         for(unsigned y=0;y<height;y++)
         {
             imageData[x][y]=value(x,y);
-            if(state==RendererState::stopped){break;}
+            if(state==RendererState::stopped)
+                break;
         }
-        if(state==RendererState::stopped){break;}
+        if(state==RendererState::stopped)
+            break;
     }
 
     lock.lock();
@@ -57,7 +64,8 @@ void mandelbrotRenderer::render(unsigned widthFrom, unsigned widthTo)
 
     if(workerThreadsAlive==0)
     {
-        std::chrono::milliseconds renderEndTime=std::chrono::duration_cast< std::chrono::milliseconds >
+        std::chrono::milliseconds renderEndTime =
+                std::chrono::duration_cast< std::chrono::milliseconds >
                 (std::chrono::system_clock::now().time_since_epoch());
         renderEndTime-=renderStartTime;
         state=RendererState::drawingFinished;
@@ -69,11 +77,12 @@ void mandelbrotRenderer::render(unsigned widthFrom, unsigned widthTo)
 
 unsigned mandelbrotRenderer::value(unsigned &x, unsigned &y)
 {
-    std::complex<float> point((float)x/width-1.5, (float)y/height-0.5);
+    std::complex<float> point((float)x/(width*zoomX)+positionX,
+                              (float)y/(height*zoomY)+positionY);
     std::complex<float> z(0, 0);
     unsigned iterations = 0;
 
-    while (abs(z) < 2 && iterations < 42)
+    while (abs(z) < 2 && iterations < iterationsLimit)
     {
         z = z * z + point;
         iterations++;

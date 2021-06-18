@@ -13,6 +13,11 @@ private:
     std::chrono::milliseconds renderStartTime;
     unsigned value(unsigned &x, unsigned &y);
     void render(unsigned widthFrom, unsigned widthTo);
+    unsigned iterationsLimit;
+    double zoomX;
+    double zoomY;
+    double positionX;
+    double positionY;
 public:
     mandelbrotRenderer();
     void renderStart(unsigned threads);
